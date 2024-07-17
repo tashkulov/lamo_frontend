@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store/store';
-import { fetchProfiles } from '../../store/userSlice'; // Assuming there's a fetchProfiles action
-import './Navbar.scss'; // Import your SCSS file
+import { fetchProfiles, fetchUsers, createUser, createUserProfile } from '../../store/userSlice';
+import './Navbar.scss';
 
-import UserForm from '../UserForm/UserForm'; // Import your UserForm component
-import UserProfileForm from '../UserProfileForm/UserProfileForm'; // Import your UserProfileForm component
+import UserForm from '../UserForm/UserForm';
+import UserProfileForm from '../UserProfileForm/UserProfileForm';
+import {User} from "../types.ts";
 
 const Navbar: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -13,9 +14,10 @@ const Navbar: React.FC = () => {
     const [selectedProfileId, setSelectedProfileId] = useState<number | null>(null);
     const [activeComponent, setActiveComponent] = useState<'CreateUser' | 'CreateUserProfile' | null>(null);
 
-    // Fetch profiles when component mounts
+    // Fetch profiles and users when component mounts
     useEffect(() => {
         dispatch(fetchProfiles());
+        dispatch(fetchUsers());
     }, [dispatch]);
 
     const handleProfileSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -27,6 +29,16 @@ const Navbar: React.FC = () => {
     const handleNavItemClicked = (component: 'CreateUser' | 'CreateUserProfile') => {
         setSelectedProfileId(null); // Reset selected profile when nav item is clicked
         setActiveComponent(component);
+    };
+
+    // Example handler for creating a new user
+    const handleCreateUser = (userData: Omit<User, 'id'>) => {
+        dispatch(createUser(userData));
+    };
+
+    // Example handler for creating a new user profile
+    const handleCreateUserProfile = (profileData: FormData) => {
+        dispatch(createUserProfile(profileData));
     };
 
     return (
@@ -49,8 +61,13 @@ const Navbar: React.FC = () => {
             </div>
 
             {/* Render selected component based on activeComponent state */}
-            {activeComponent === 'CreateUser' && <UserForm />}
-            {activeComponent === 'CreateUserProfile' && <UserProfileForm profileId={selectedProfileId} />}
+            {activeComponent === 'CreateUser' && <UserForm onSubmit={handleCreateUser} />}
+            {activeComponent === 'CreateUserProfile' && (
+                <UserProfileForm
+                    profileId={selectedProfileId}
+                    onSubmit={handleCreateUserProfile}
+                />
+            )}
         </div>
     );
 };

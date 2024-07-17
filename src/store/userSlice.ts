@@ -16,6 +16,7 @@ interface UserProfile {
     location?: string;
     bio?: string;
     profileImageUrl?: string;
+    name?:string;
 }
 
 interface UsersState {
@@ -59,11 +60,43 @@ export const createUserProfile = createAsyncThunk<UserProfile, FormData, { rejec
             });
             return response.data;
         } catch (err: any) {
-            // Обработка ошибки и возврат значения с отклонением
             if (axios.isAxiosError(err)) {
                 return rejectWithValue(err.response?.data || 'Failed to create user profile');
             } else {
                 return rejectWithValue('Failed to create user profile');
+            }
+        }
+    }
+);
+
+export const fetchUsers = createAsyncThunk<User[], void, { rejectValue: string }>(
+    'users/fetchUsers',
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await axios.get('http://localhost:3000/api/users');
+            return response.data;
+        } catch (err: any) {
+            if (axios.isAxiosError(err)) {
+                return rejectWithValue(err.response?.data || 'Failed to fetch users');
+            } else {
+                return rejectWithValue('Failed to fetch users');
+            }
+        }
+    }
+);
+
+// Новый экшен для получения всех профилей
+export const fetchProfiles = createAsyncThunk<UserProfile[], void, { rejectValue: string }>(
+    'users/fetchProfiles',
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await axios.get('http://localhost:3000/api/userProfiles');
+            return response.data;
+        } catch (err: any) {
+            if (axios.isAxiosError(err)) {
+                return rejectWithValue(err.response?.data || 'Failed to fetch profiles');
+            } else {
+                return rejectWithValue('Failed to fetch profiles');
             }
         }
     }
@@ -98,23 +131,32 @@ const usersSlice = createSlice({
             .addCase(createUserProfile.rejected, (state, action: PayloadAction<string | undefined, string>) => {
                 state.loading = false;
                 state.error = action.payload || 'Failed to create user profile';
+            })
+            .addCase(fetchUsers.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchUsers.fulfilled, (state, action: PayloadAction<User[]>) => {
+                state.loading = false;
+                state.users = action.payload;
+            })
+            .addCase(fetchUsers.rejected, (state, action: PayloadAction<string | undefined, string>) => {
+                state.loading = false;
+                state.error = action.payload || 'Failed to fetch users';
+            })
+            .addCase(fetchProfiles.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchProfiles.fulfilled, (state, action: PayloadAction<UserProfile[]>) => {
+                state.loading = false;
+                state.profiles = action.payload;
+            })
+            .addCase(fetchProfiles.rejected, (state, action: PayloadAction<string | undefined, string>) => {
+                state.loading = false;
+                state.error = action.payload || 'Failed to fetch profiles';
             });
     },
 });
-export const fetchUsers = createAsyncThunk<User[], void, { rejectValue: string }>(
-    'users/fetchUsers',
-    async (_, { rejectWithValue }) => {
-        try {
-            const response = await axios.get('http://localhost:3000/api/users');
-            return response.data;
-        } catch (err: any) {
-            if (axios.isAxiosError(err)) {
-                return rejectWithValue(err.response?.data || 'Failed to fetch users');
-            } else {
-                return rejectWithValue('Failed to fetch users');
-            }
-        }
-    }
-);
 
 export default usersSlice.reducer;

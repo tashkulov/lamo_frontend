@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store/store';
-import { fetchUsers, createUserProfile } from '../../store/userSlice';
+import { fetchUsers } from '../../store/userSlice';
 import './UserProfileForm.scss';
 
-const UserProfileForm: React.FC = () => {
+interface UserProfileFormProps {
+    profileId: number | null;
+    onSubmit: (profileData: FormData) => void;
+}
+
+const UserProfileForm: React.FC<UserProfileFormProps> = ({ profileId, onSubmit }) => {
     const dispatch = useDispatch<AppDispatch>();
     const users = useSelector((state: RootState) => state.users.users);
-    const [userId, setUserId] = useState<number | null>(null);
+    const [userId, setUserId] = useState<number | null>(profileId);
+    const [name, setName] = useState<string>('');
     const [age, setAge] = useState<number>(0);
     const [gender, setGender] = useState<string>('');
     const [interests, setInterests] = useState<string>('');
@@ -26,6 +32,7 @@ const UserProfileForm: React.FC = () => {
 
         const formData = new FormData();
         formData.append('userId', userId.toString());
+        formData.append('name', gender);
         formData.append('age', age.toString());
         formData.append('gender', gender);
         formData.append('interests', interests);
@@ -35,7 +42,7 @@ const UserProfileForm: React.FC = () => {
             formData.append('profileImage', profileImage);
         }
 
-        dispatch(createUserProfile(formData));
+        onSubmit(formData);
     };
 
     return (
@@ -44,8 +51,9 @@ const UserProfileForm: React.FC = () => {
                 <h2>Create User Profile</h2>
                 <div className="form-group">
                     <label htmlFor="userId">Select User</label>
-                    <select id="userId" onChange={(e) => setUserId(Number(e.target.value))} required>
-                        <option value="">Select User</option>
+                    <select id="userId" onChange={(e) => setUserId(Number(e.target.value))} value={userId || 'default'}
+                            required>
+                        <option value="default">Select User</option>
                         {users.map((user) => (
                             <option key={user.id} value={user.id}>
                                 {user.username}
@@ -53,6 +61,20 @@ const UserProfileForm: React.FC = () => {
                         ))}
                     </select>
                 </div>
+
+                <div className="form-group">
+                    <label htmlFor="name">Name</label>
+                    <input
+                        type="text"
+                        id="name"
+                        placeholder="Enter Name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required
+                    />
+                </div>
+
+
                 <div className="form-group">
                     <label htmlFor="age">Age</label>
                     <input
