@@ -1,19 +1,19 @@
+// src/components/UserForm/UserForm.tsx
 import React, { useState } from 'react';
-import './UserForm.scss';
-import {User} from "../types.ts"; // Import your SCSS file
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from '../../store/store';
+import { createUser } from '../../store/userSlice';
+import './UserForm.scss'; // Import your SCSS file
 
-interface UserFormProps {
-    onSubmit: (userData: Omit<User, 'id'>) => void;
-}
-
-const UserForm: React.FC<UserFormProps> = ({ onSubmit }) => {
+const UserForm: React.FC = () => {
+    const dispatch = useDispatch<AppDispatch>();
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSubmit({ username, email, password });
+        dispatch(createUser({ username, email, password }));
         setUsername('');
         setEmail('');
         setPassword('');
